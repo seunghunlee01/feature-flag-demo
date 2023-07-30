@@ -1,0 +1,49 @@
+<!-- templates/table.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ application }}</title>
+</head>
+<body>
+    <h1>{{ application }} - {{ environment }}</h1>
+    <h2>service</h2>
+    <table border="1">
+        <tr>
+            <th>Key</th>
+            <th>Enabled</th>
+            <th>Attributes</th>
+        </tr>
+        {% for key, value in data["service"].items() %}
+            <tr>
+                <td>{{ key }}</td>
+                <td>{{ value.enabled }}</td>
+                <td>
+                    {% for k, v in value.items() if k != 'enabled' %}
+                        <strong>{{ k }}:</strong> {{ v }}<br>
+                    {% endfor %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <h2>development</h2>
+    <table border="1">
+        <tr>
+            <th>Key</th>
+            <th>Enabled</th>
+            <th>Attributes</th>
+        </tr>
+        {% for key, value in data["development"].items() %}
+        <tr>
+            <td>{{ key }}</td>
+            <td>{{ value.enabled }}</td>
+            <td>
+                {% for k, v in value.items() if k != 'enabled' %}
+                <strong>{{ k }}:</strong> {{ v }}<br>
+                {% endfor %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
