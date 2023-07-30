@@ -1,0 +1,7 @@
+.idea
+
+# dependencies
+poetry.lock
+
+# env files
+.env.*
