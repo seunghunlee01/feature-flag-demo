@@ -20,7 +20,7 @@ class AppConfigService:
             appconfig_environment=environment_name,
             appconfig_profile="development",
             max_config_age=15,
-            session=boto3.Session(region_name="ap-northeast-2", profile_name="yogiyo-dev"),
+            session=boto3.Session(region_name="ap-northeast-2", profile_name=profile_name),
         )
         self.development_appconfig.start_session()
         self.development_appconfig.update_config()
