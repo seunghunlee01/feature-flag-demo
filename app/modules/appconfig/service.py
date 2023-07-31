@@ -5,22 +5,27 @@ from appconfig_helper import AppConfigHelper
 
 class AppConfigService:
     def __init__(self, application_name, environment_name, profile_name):
+        self.application_name = application_name
+        self.environment_name = environment_name
+        self.profile_name = profile_name
+
+    def _create_appconfig_helper(self):
         self.service_appconfig = AppConfigHelper(
-            appconfig_application=application_name,
-            appconfig_environment=environment_name,
+            appconfig_application=self.application_name,
+            appconfig_environment=self.environment_name,
             appconfig_profile="service",
             max_config_age=15,
-            session=boto3.Session(region_name="ap-northeast-2", profile_name=profile_name),
+            session=boto3.Session(region_name="ap-northeast-2", profile_name=self.profile_name),
         )
         self.service_appconfig.start_session()
         self.service_appconfig.update_config()
 
         self.development_appconfig = AppConfigHelper(
-            appconfig_application=application_name,
-            appconfig_environment=environment_name,
+            appconfig_application=self.application_name,
+            appconfig_environment=self.environment_name,
             appconfig_profile="development",
             max_config_age=15,
-            session=boto3.Session(region_name="ap-northeast-2", profile_name=profile_name),
+            session=boto3.Session(region_name="ap-northeast-2", profile_name=self.profile_name),
         )
         self.development_appconfig.start_session()
         self.development_appconfig.update_config()
