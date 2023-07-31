@@ -11,12 +11,11 @@ router = APIRouter(prefix="/appconfig")
 
 @router.get("/", status_code=200, response_class=HTMLResponse)
 async def get_appconfig(request: Request):
-    application = await appconfig_service.get_application()
-    environment = await appconfig_service.get_environment()
-    profile = await appconfig_service.get_profile()
-    config = await appconfig_service.get_appconfig()
+    config = appconfig_service.get_appconfig()
 
     return templates.TemplateResponse("table.html",
-                                      {"request": request, "application": application['service'],
-                                       "environment": environment['service'], "profile": profile['service'],
-                                       "data": config})
+                                      {"request": request,
+                                       "application": config['application'],
+                                       "environment": config['environment'],
+                                       "configuration_profile": config['configuration_profile'],
+                                       "data": config['configuration_profile']})
