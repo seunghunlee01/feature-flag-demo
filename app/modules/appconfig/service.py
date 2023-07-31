@@ -1,6 +1,8 @@
-import boto3
+from datetime import datetime, timedelta
 
+import boto3
 from appconfig_helper import AppConfigHelper
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 
 class AppConfigService:
@@ -9,7 +11,26 @@ class AppConfigService:
         self.environment_name = environment_name
         self.profile_name = profile_name
 
-    def _create_appconfig_helper(self):
+        self.scheduler = AsyncIOScheduler()
+
+        self.service_appconfig = None
+        self.development_appconfig = None
+
+    async def start_scheduler(self):
+        await self._create_appconfig_helper()
+
+        self.scheduler.add_job(self._update_appconfig_helper, 'cron', minute='*/1',
+                               start_date=datetime.now() + timedelta(seconds=1))
+        self.scheduler.add_job(self._update_appconfig_helper(True), 'cron', hour='0/23',
+                               start_date=datetime.now() + timedelta(seconds=1))
+        self.scheduler.start()
+
+    async def stop_scheduler(self):
+        self.scheduler.shutdown()
+
+    async def _create_appconfig_helper(self):
+        print(f'create appconfig helper - {datetime.now()}')
+
         self.service_appconfig = AppConfigHelper(
             appconfig_application=self.application_name,
             appconfig_environment=self.environment_name,
@@ -17,7 +38,6 @@ class AppConfigService:
             max_config_age=15,
             session=boto3.Session(region_name="ap-northeast-2", profile_name=self.profile_name),
         )
-        self.service_appconfig.start_session()
         self.service_appconfig.update_config()
 
         self.development_appconfig = AppConfigHelper(
@@ -27,20 +47,19 @@ class AppConfigService:
             max_config_age=15,
             session=boto3.Session(region_name="ap-northeast-2", profile_name=self.profile_name),
         )
-        self.development_appconfig.start_session()
         self.development_appconfig.update_config()
 
-    async def get_application(self):
-        return {"service": self.service_appconfig.appconfig_application,
-                "development": self.development_appconfig.appconfig_application}
+    async def _update_appconfig_helper(self, force_update=False):
+        print(f'update appconfig helper - {datetime.now()}')
 
-    async def get_environment(self):
-        return {"service": self.service_appconfig.appconfig_environment,
-                "development": self.development_appconfig.appconfig_environment}
+        self.service_appconfig.update_config(force_update)
+        self.development_appconfig.update_config(force_update)
 
-    async def get_profile(self):
-        return {"service": self.service_appconfig.appconfig_profile,
-                "development": self.development_appconfig.appconfig_profile}
-
-    async def get_appconfig(self):
-        return {"service": self.service_appconfig.config, "development": self.development_appconfig.config}
+    def get_appconfig(self):
+        return {"profile": self.profile_name,
+                "application": self.application_name,
+                "environment": self.environment_name,
+                "configuration_profile": {
+                    self.service_appconfig.appconfig_profile: self.service_appconfig.config,
+                    self.development_appconfig.appconfig_profile: self.development_appconfig.config
+                }}
